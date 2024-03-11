@@ -1,4 +1,4 @@
-# NTHU Parallel Programming 2023
+# Parallel Programming Practice
 ## hw1-3
 They are my homeworks from the parallel programming course
 - hw1 Odd Even Sort
