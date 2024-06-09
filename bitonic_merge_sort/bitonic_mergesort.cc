@@ -3,11 +3,16 @@
 #include <mpi.h>
 #include <omp.h>
 #include <valarray>
-#include <boost/sort/sort.hpp>
+
+//#include <iostream>
+//#include <stack>
+//#include <tuple>
+
 #include <cfloat>
 #define ASCENDING 1
 #define DESCENDING 0
 
+/*
 void bitonicMerge(int size, int st, float *arr, int dir){
     if(size > 1){
         int subsize = size / 2;
@@ -16,8 +21,34 @@ void bitonicMerge(int size, int st, float *arr, int dir){
         bitonicMerge(subsize, st + subsize, arr, dir);
     }
 }
+*/
+
+void bitonicMerge(int size, int st, float *arr, int dir){
+    std::stack<std::tuple<int, int, float*, int>> stack;
+    stack.push(std::make_tuple(size, st, arr, dir));
+    
+    while(!stack.empty()){
+        auto [currentSize, currentSt, currentArr, currentDir] = stack.top();
+        stack.pop();
+        
+        if(currentSize > 1) {
+            int subsize = currentSize / 2;
+            
+            #pragma omp simd
+            for(int i = currentSt; i < currentSt + subsize; i++){
+                if((currentArr[i] > currentArr[i + subsize]) == currentDir){
+                    std::swap(currentArr[i], currentArr[i + subsize]);
+                }
+            }
+            
+            stack.push(std::make_tuple(subsize, currentSt, currentArr, currentDir));
+            stack.push(std::make_tuple(subsize, currentSt + subsize, currentArr, currentDir));
+        }
+    }
+}
 
 void bitonicSort(int size, int st, float *arr, int dir){
+
     if(size > 1){
         int subsize = size / 2;
         //std::sort(arr, arr + subsize);
@@ -81,9 +112,13 @@ int main(int argc, char *argv[]){
     int direct, pair, order, pair_order;
     float *send = chunk, *recv = chunk + chunksize;
 
+    
     if(rank % 2) {bitonicSort(chunksize, 0, chunk, DESCENDING); order = DESCENDING;}
     else {bitonicSort(chunksize, 0, chunk, ASCENDING); order = ASCENDING;}
-
+    /*
+    if(rank % 2) {std::sort(chunk, chunk + chunksize, std::greater<float>()); order = DESCENDING;}
+    else {std::sort(chunk, chunk + chunksize); order = ASCENDING;}
+    */
     for(int stage = 1; stage < size; stage *= 2){
         direct = rank / (2 * stage) % 2;
         for(int step = stage; step >= 1; step /= 2){
@@ -124,6 +159,8 @@ int main(int argc, char *argv[]){
     if(size == 1) MPI_File_write_at(output_file, sizeof(float) * display, send, ARRAY_SIZE, MPI_FLOAT, MPI_STATUS_IGNORE);
     else if(0 < ARRAY_SIZE - display && ARRAY_SIZE - display < chunksize) MPI_File_write_at(output_file, sizeof(float) * display, send, ARRAY_SIZE - display, MPI_FLOAT, MPI_STATUS_IGNORE);
     else if(display < ARRAY_SIZE) MPI_File_write_at(output_file, sizeof(float) * display, send, chunksize, MPI_FLOAT, MPI_STATUS_IGNORE);
+
+    if(rank == 0) printf("Time: %f\n", end_time - start_time);
 
     MPI_File_close(&output_file); 
 
