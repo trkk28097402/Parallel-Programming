@@ -1,7 +1,7 @@
 CC = mpicc
 CXX = mpicxx
-CXXFLAGS = -Ofast -lm
-CFLAGS = -Ofast -lm
+CXXFLAGS = -O3 -lm
+CFLAGS = -O3 -lm
 TARGETS = hw1
 
 .PHONY: all
