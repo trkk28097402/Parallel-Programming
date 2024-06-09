@@ -12,7 +12,7 @@
 #define ASCENDING 1
 #define DESCENDING 0
 
-/*
+
 void bitonicMerge(int size, int st, float *arr, int dir){
     if(size > 1){
         int subsize = size / 2;
@@ -21,8 +21,8 @@ void bitonicMerge(int size, int st, float *arr, int dir){
         bitonicMerge(subsize, st + subsize, arr, dir);
     }
 }
-*/
 
+/*
 void bitonicMerge(int size, int st, float *arr, int dir){
     std::stack<std::tuple<int, int, float*, int>> stack;
     stack.push(std::make_tuple(size, st, arr, dir));
@@ -46,7 +46,7 @@ void bitonicMerge(int size, int st, float *arr, int dir){
         }
     }
 }
-
+*/
 void bitonicSort(int size, int st, float *arr, int dir){
 
     if(size > 1){
